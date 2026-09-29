@@ -1,9 +1,9 @@
 // ==========================================
-// 1. ESTADO (Usando SessionStorage - Nivel Pro)
+// 1. ESTADO CENTRALIZADO (State Management)
 // ==========================================
 const appState = {
     currentCity: null,
-    // RF06: Leemos la sesión actual. Si está vacía, iniciamos un array.
+    // RF06: Leemos la sesión actual. Si está vacía, iniciamos un array vacío.
     favorites: JSON.parse(sessionStorage.getItem('campusFavorites')) || [] 
 };
 
@@ -16,6 +16,7 @@ const DOM = {
     btnFavorite: document.getElementById('btn-favorite'),
     statusMsg: document.getElementById('status-message'),
     weatherCard: document.getElementById('weather-card'),
+    currentWeatherBox: document.querySelector('.current-weather'), // Para tematización
     cityName: document.getElementById('city-name'),
     temperature: document.getElementById('temperature'),
     condition: document.getElementById('condition'),
@@ -26,18 +27,42 @@ const DOM = {
 };
 
 // ==========================================
-// 3. FUNCIONES UTILITARIAS
+// 3. FUNCIONES UTILITARIAS Y UI
 // ==========================================
+
+/**
+ * Traduce el código de clima WMO de Open-Meteo a texto amigable
+ */
 function getWeatherCondition(code) {
     if (code === 0) return '☀️ Despejado';
     if (code > 0 && code <= 3) return '⛅ Parcialmente Nublado';
     if (code >= 45 && code <= 48) return '🌫️ Niebla';
-    if (code >= 51 && code <= 67) return '🌧️ Lluvia';
-    if (code >= 71 && code <= 77) return '❄️ Nieve';
+    if (code >= 51 && code <= 67 || code >= 80 && code <= 82 || code >= 95) return '🌧️ Lluvia';
+    if (code >= 71 && code <= 77 || code >= 85) return '❄️ Nieve';
     return '🌩️ Clima Inestable';
 }
 
-// RF03: Mostrar estado de carga usando Skeleton Loading
+/**
+ * Cambia dinámicamente las clases CSS de la tarjeta según el clima
+ */
+function updateWeatherTheme(code) {
+    const box = DOM.currentWeatherBox;
+    box.classList.remove('theme-sunny', 'theme-cloudy', 'theme-rainy', 'theme-snowy');
+    
+    if (code === 0) {
+        box.classList.add('theme-sunny');
+    } else if (code > 0 && code <= 48) {
+        box.classList.add('theme-cloudy');
+    } else if (code >= 51 && code <= 67 || code >= 80 && code <= 82 || code >= 95) {
+        box.classList.add('theme-rainy');
+    } else if (code >= 71 && code <= 77 || code >= 85) {
+        box.classList.add('theme-snowy');
+    }
+}
+
+/**
+ * RF03: Maneja la animación de Skeleton Loading
+ */
 function toggleSkeleton(isLoading) {
     const elements = [DOM.cityName, DOM.temperature, DOM.condition, DOM.humidity, DOM.wind];
     if (isLoading) {
@@ -50,7 +75,9 @@ function toggleSkeleton(isLoading) {
     }
 }
 
-// Manejo de errores
+/**
+ * RF05: Centraliza el manejo visual de errores
+ */
 function showError(message) {
     DOM.weatherCard.classList.add('hidden');
     DOM.statusMsg.textContent = message;
@@ -62,9 +89,12 @@ function showError(message) {
 // ==========================================
 // 4. LÓGICA PRINCIPAL (FETCH Y PROMESAS)
 // ==========================================
-// RF02: Consultar API
+
+/**
+ * RF02: Realiza la consulta asíncrona a la API externa
+ */
 function fetchWeatherData(lat, lon, cityName) {
-    toggleSkeleton(true); // Activar animación de carga
+    toggleSkeleton(true);
     DOM.btnFavorite.disabled = true;
 
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
@@ -80,23 +110,30 @@ function fetchWeatherData(lat, lon, cityName) {
         })
         .catch(error => {
             console.error('Error en Fetch:', error);
-            showError(`No pudimos cargar el clima de ${cityName}. Revisa tu conexión.`);
+            showError(`No pudimos cargar el clima de ${cityName}. Revisa tu conexión a internet o intenta más tarde.`);
         });
 }
 
-// RF04: Renderizar datos
+/**
+ * RF04: Renderiza los datos en el DOM de forma dinámica
+ */
 function renderWeather(data, cityName) {
-    toggleSkeleton(false); // Apagar animación de carga
+    toggleSkeleton(false);
     DOM.btnFavorite.disabled = false;
 
+    // Actualizamos textos
     DOM.cityName.textContent = `Clima en ${cityName}`;
     DOM.temperature.textContent = `${data.current.temperature_2m}°C`;
     DOM.condition.textContent = getWeatherCondition(data.current.weather_code);
     DOM.humidity.textContent = `${data.current.relative_humidity_2m}%`;
     DOM.wind.textContent = `${data.current.wind_speed_10m} km/h`;
 
+    // Efecto visual avanzado: tematización
+    updateWeatherTheme(data.current.weather_code);
+
+    // Renderizamos los próximos 3 días
     for (let i = 1; i <= 3; i++) {
-        if(data.daily.time[i]){
+        if(data.daily.time[i]) {
             const date = new Date(data.daily.time[i] + 'T00:00:00');
             const dayName = date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
             const card = document.createElement('div');
@@ -114,6 +151,7 @@ function renderWeather(data, cityName) {
 // ==========================================
 // 5. GESTIÓN DE FAVORITOS (SESSION STORAGE)
 // ==========================================
+
 function saveFavorites() {
     sessionStorage.setItem('campusFavorites', JSON.stringify(appState.favorites));
     renderFavorites();
@@ -142,22 +180,22 @@ function renderFavorites() {
 // ==========================================
 // 6. EVENTOS (LISTENERS Y CALLBACKS)
 // ==========================================
-// Cambio en el Select
+
+// Callback: Evento change en el Select
 DOM.select.addEventListener('change', e => {
     if (!e.target.value) return;
     const [lat, lon, cityName] = e.target.value.split(',');
     fetchWeatherData(lat, lon, cityName);
 });
 
-// Callback de API Nativa: Geolocalización
+// Callback: Evento click en el botón GPS (Geolocalización)
 DOM.btnLocation.addEventListener('click', () => {
     if (!navigator.geolocation) {
         showError('Tu navegador no soporta geolocalización.');
         return;
     }
     
-    // Cambiamos el select para que no quede pegado en otra ciudad
-    DOM.select.value = ""; 
+    DOM.select.value = ""; // Reseteamos el selector
     toggleSkeleton(true);
 
     navigator.geolocation.getCurrentPosition(
@@ -175,23 +213,28 @@ DOM.btnLocation.addEventListener('click', () => {
     );
 });
 
-// Agregar Favorito
+// Callback: Agregar Favorito
 DOM.btnFavorite.addEventListener('click', () => {
-    if (!appState.currentCity) return;
+    // Evitamos agregar si no hay ciudad o si los datos están corruptos
+    if (!appState.currentCity || !appState.currentCity.name) {
+        alert("No hay una ciudad válida para guardar.");
+        return;
+    }
+
     const exists = appState.favorites.find(c => c.name === appState.currentCity.name);
     
     if (!exists) {
         appState.favorites.push(appState.currentCity);
-        saveFavorites(); // Guarda en SessionStorage
+        saveFavorites(); 
     } else {
         alert('Esta ciudad ya está en tus favoritos.');
     }
 });
 
-// Funciones globales para los botones generados
+// Funciones globales (window) para los botones creados dinámicamente
 window.removeFavorite = function(cityName) {
     appState.favorites = appState.favorites.filter(c => c.name !== cityName);
-    saveFavorites(); // Actualiza SessionStorage
+    saveFavorites(); 
 };
 
 window.loadFavorite = function(lat, lon, cityName) {
@@ -199,5 +242,5 @@ window.loadFavorite = function(lat, lon, cityName) {
     fetchWeatherData(lat, lon, cityName);
 };
 
-// Inicializar lista de favoritos al cargar la página
+// Inicialización de la app
 renderFavorites();

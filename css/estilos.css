@@ -40,7 +40,14 @@ select:focus { border-color: var(--primary); }
 .weather-card { background: var(--card-bg); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 2rem; }
 .city-title { color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1.5rem; min-height: 35px; }
 
-.current-weather { display: flex; justify-content: space-between; align-items: center; background: rgba(104, 2, 193, 0.05); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; flex-wrap: wrap;}
+/* Caja de clima actual con transición suave para los temas dinámicos */
+.current-weather { 
+    display: flex; justify-content: space-between; align-items: center; 
+    background: rgba(104, 2, 193, 0.05); 
+    padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; flex-wrap: wrap;
+    transition: background 0.8s ease, color 0.8s ease; 
+}
+
 .temp-huge { font-size: 3rem; font-weight: bold; color: var(--primary); display: block; min-height: 70px; min-width: 100px; }
 .condition-text { font-size: 1.2rem; font-weight: 500; min-height: 25px; min-width: 150px; display: inline-block;}
 .weather-details p { font-size: 1.1rem; margin: 0.5rem 0; min-height: 25px;}
@@ -51,7 +58,9 @@ select:focus { border-color: var(--primary); }
 .favorites-list { list-style: none; margin-top: 1rem; }
 .favorites-list li { background: var(--card-bg); padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
 
-/* --- 1. MODO OSCURO (Nivel Pro) --- */
+/* ==========================================
+   MODO OSCURO (Se activa automáticamente)
+   ========================================== */
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-color: #121212;
@@ -61,7 +70,9 @@ select:focus { border-color: var(--primary); }
     }
 }
 
-/* --- 2. SKELETON LOADING (Nivel Pro) --- */
+/* ==========================================
+   SKELETON LOADING (Animación de Carga)
+   ========================================== */
 .skeleton {
     position: relative;
     overflow: hidden;
@@ -79,3 +90,26 @@ select:focus { border-color: var(--primary); }
     animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+/* ==========================================
+   TEMAS DINÁMICOS SEGÚN EL CLIMA 
+   ========================================== */
+.theme-sunny {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%) !important;
+    color: #fff !important;
+}
+.theme-cloudy {
+    background: linear-gradient(135deg, #8e9eab 0%, #eef2f3 100%) !important;
+    color: #212322 !important;
+}
+.theme-rainy {
+    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important;
+    color: #fff !important;
+}
+.theme-snowy {
+    background: linear-gradient(135deg, #E0EAFC 0%, #CFDEF3 100%) !important;
+    color: #212322 !important;
+}
+.theme-sunny .temp-huge, .theme-rainy .temp-huge {
+    color: #fff !important;
+}

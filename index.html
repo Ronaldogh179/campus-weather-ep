@@ -24,6 +24,9 @@
                         <option value="-12.0464,-77.0282,Lima">Lima</option>
                         <option value="-13.5226,-71.9673,Cusco">Cusco</option>
                         <option value="-16.4090,-71.5375,Arequipa">Arequipa</option>
+                        <option value="-15.8402,-70.0219,Puno">Puno</option>
+                        <option value="-12.5933,-69.1836,Madre de Dios">Madre de Dios</option>
+                        <option value="-15.4825,-70.1331,Juliaca">Juliaca</option>
                     </select>
                     <button id="btn-location" class="btn btn-secondary" title="Usar mi ubicación actual">📍 GPS</button>
                 </div>
@@ -32,13 +35,14 @@
             <button id="btn-favorite" class="btn btn-primary" disabled>⭐ Guardar Favorito</button>
         </section>
 
-        <!-- RF05: Manejo de errores (Accesible) -->
+        <!-- RF05: Manejo de errores (Accesible con aria-live) -->
         <div id="status-message" class="status-box hidden" aria-live="polite"></div>
 
-        <!-- RF03, RF04: Resultados dinámicos y Skeleton Loading -->
+        <!-- RF03, RF04: Resultados dinámicos y Tematización -->
         <section id="weather-card" class="weather-card hidden">
             <h2 id="city-name" class="city-title"></h2>
             
+            <!-- Esta caja cambiará de color dinámicamente -->
             <div class="current-weather">
                 <div class="weather-main">
                     <span id="temperature" class="temp-huge"></span>

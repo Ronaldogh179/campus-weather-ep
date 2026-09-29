@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Weather - Asistente Meteorológico</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <header class="header">
+        <h1>Campus Weather</h1>
+        <p>Asistente meteorológico universitario</p>
+    </header>
+
+    <main class="container">
+        <!-- RF01: Selección de ciudad y Geolocalización -->
+        <section class="control-panel">
+            <div class="input-group">
+                <label for="city-select">Selecciona una ciudad o usa tu ubicación:</label>
+                <div class="action-row">
+                    <select id="city-select">
+                        <option value="" disabled selected>Elige una ciudad...</option>
+                        <option value="-12.0651,-75.2049,Huancayo">Huancayo</option>
+                        <option value="-12.0464,-77.0282,Lima">Lima</option>
+                        <option value="-13.5226,-71.9673,Cusco">Cusco</option>
+                        <option value="-16.4090,-71.5375,Arequipa">Arequipa</option>
+                    </select>
+                    <button id="btn-location" class="btn btn-secondary" title="Usar mi ubicación actual">📍 GPS</button>
+                </div>
+            </div>
+            <!-- RF06: Botón de favoritos -->
+            <button id="btn-favorite" class="btn btn-primary" disabled>⭐ Guardar Favorito</button>
+        </section>
+
+        <!-- RF05: Manejo de errores (Accesible) -->
+        <div id="status-message" class="status-box hidden" aria-live="polite"></div>
+
+        <!-- RF03, RF04: Resultados dinámicos y Skeleton Loading -->
+        <section id="weather-card" class="weather-card hidden">
+            <h2 id="city-name" class="city-title"></h2>
+            
+            <div class="current-weather">
+                <div class="weather-main">
+                    <span id="temperature" class="temp-huge"></span>
+                    <span id="condition" class="condition-text"></span>
+                </div>
+                <div class="weather-details">
+                    <p>💧 Humedad: <span id="humidity"></span></p>
+                    <p>💨 Viento: <span id="wind"></span></p>
+                </div>
+            </div>
+
+            <div class="forecast">
+                <h3>Pronóstico (Próximos días)</h3>
+                <div id="forecast-container" class="forecast-grid"></div>
+            </div>
+        </section>
+
+        <!-- RF06: Lista de favoritos con SessionStorage -->
+        <section class="favorites-section">
+            <h3>Tus Ciudades Favoritas</h3>
+            <ul id="favorites-list" class="favorites-list">
+                <li class="empty-state">No tienes favoritos guardados en esta sesión.</li>
+            </ul>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
